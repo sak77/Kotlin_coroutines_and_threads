@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity() {
             for (i in 1..10000) {
                 Thread(Runnable {
                     Log.v("Saket", "Going to sleep on thread $i")
-                    Thread.sleep(1)
+                    Thread.sleep(10)
                     Log.v("Saket", "Waking up on thread $i")
                 }).start()  //run() will execute on current thread whereas start() executes on worker thread..
             }
@@ -64,6 +64,12 @@ class MainActivity : AppCompatActivity() {
     //Coroutines are generally faster and more lightweight compared to threads..
     fun run_coroutines(view: View) {
         val time = measureTimeMillis {
+            /*
+            Coroutines run within a scope. The Coroutine scope defines the lifetime of the coroutine.
+            There are some pre-defined scopes like GlobalScope, MainScope, ViewModelScope etc.
+
+            But you can also define your own CoroutineScope.
+             */
             //Depending on the scope, if you use runBlocking, then it blocks the current thread.
             //But if i use Dispatchers.IO, then it does not affect the main thread.
             /*
@@ -74,22 +80,20 @@ class MainActivity : AppCompatActivity() {
             CoroutineScope(context = Dispatchers.IO).launch {
                 for (i in 1..100) {
                     //Log.v("Saket", "Going to sleep on coroutine $i")
-                    Log.v("Saket", "Before delay - ${Thread.currentThread().name}")
+                    Log.v("Saket", "Before delay $i - ${Thread.currentThread().name}")
                     delay(1000)
-                    Log.v("Saket", "After delay - ${Thread.currentThread().name}")
+                    Log.v("Saket", "After delay $i - ${Thread.currentThread().name}")
                     //Log.v("Saket", "Waking up on coroutine $i")
                 }
             }
 
-            /*
-            Below coroutine will execute on the current thread which is the main thread in this case.
-             */
-            /*runBlocking {
-                for (i in 1..10) {
+            //Below coroutine will execute on the current thread which is the main thread in this case.
+/*            runBlocking {
+                for (i in 1..1000) {
                     launch {
                         //Log.v("Saket", "Going to sleep on coroutine $i")
-                        Log.v("Saket", "Current thread - ${Thread.currentThread().name}")
-                        delay(1000)
+                        Log.v("Saket", "Thread $i - ${Thread.currentThread().name}")
+                        delay(10000)
                         //Log.v("Saket", "Waking up on coroutine $i")
                     }
                 }
