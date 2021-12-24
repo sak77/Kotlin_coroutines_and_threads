@@ -25,8 +25,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //run_10k_threads()
-        //run_coroutines()
     }
 
 
@@ -66,14 +64,16 @@ class MainActivity : AppCompatActivity() {
         val time = measureTimeMillis {
             /*
             Coroutines run within a scope. The Coroutine scope defines the lifetime of the coroutine.
-            There are some pre-defined scopes like GlobalScope, MainScope, ViewModelScope etc.
+            There are some pre-defined scopes:
+            ViewModelScope
+            LifeCycleScope
+            GlobalScope
+            MainScope
 
-            But you can also define your own CoroutineScope.
+            But you can also define your own CoroutineScope using CoroutineScope().
              */
-            //Depending on the scope, if you use runBlocking, then it blocks the current thread.
-            //But if i use Dispatchers.IO, then it does not affect the main thread.
             /*
-            Instead we have a thread pool where the coroutines are executed on separate threads.
+            Coroutines use a thread pool where the jobs are executed on separate threads.
             It is also observed that the coroutine may switch execution from one thread before the
             delay() to another thread after the delay. This is very flexible.
              */
