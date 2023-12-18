@@ -5,100 +5,79 @@ import android.os.Bundle
 import kotlin.system.measureTimeMillis
 import android.util.Log
 import android.view.View
+import androidx.lifecycle.lifecycleScope
+import com.saket.kotlin_coroutines_and_threads.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
 import java.lang.Runnable
+import java.math.BigInteger
+import java.util.Random
+import kotlin.coroutines.CoroutineContext
 
 /**
- * The purpose of this sample app is to compare threads and coroutines in kotlin.
+ * Threads can be blocked in 2 ways - CPU intensive task or IO task.
+ * For CPU intensive tasks, the thread becomes blocked because CPU is busy performing
+ * some operation. On multi-core machines, the way to work around this situation would
+ * be to have a thread pool which can then dispatch tasks on separate threads to other
+ * processors. On single processor machine, once CPU is busy then other tasks will have
+ * to wait until its free.
+ * For IO tasks, CPU is only waiting for some external response. In this case CPU time
+ * is wasted.
+ * Blocking task on main thread will freeze the UI
+ * Blocking task on worker thread. The UI may not be affected, but blocked thread
+ * cannot be used to perform any other operation, which means CPU resource/time wastage.
+ * Enter Coroutines and Suspension.
+ * Suspension allows for tasks on IO blocked thread to be temporarily paused (suspended).
+ * Instead the CoroutineDispatcher will switch to tasks from other Coroutines to the processor.
+ * Once processor is free again, the CoroutineDispatcher will resume execution of suspended
+ * function.
+ * For CPU blocked threads, one can to use Dispatchers.Default CoroutineContext, which provides
+ * a thread-pool with as many threads as CPUs. It is considered as most efficient way to
+ * work with CPU intensive tasks. In this case, if one thread becomes blocked, the dispatcher
+ * can use other threads to execute execute tasks in parallel. Remember, for IO blocked threads,
+ * the dispatcher may still switch between them if required.
+ * For IO blocking tasks, Coroutines prefer to use Dispatchers.IO CoroutineContext. This provides
+ * a thread-pool with up to 64 tasks or max number of cores if its value is higher.
+ * Under the hood, both Dispatchers.Default and Dispatchers.IO share the same thread-pool.
+ * This thread-pool is setup for each process. So it is possible that when one sets up
+ * Dispatcher.IO, then the first few threads will be the same ones as used for Dispatchers.Default.
+ * On top of it, the new threads are created in the shared thread-pool.
+ * Each Suspend function executes in a linear fashion. So it allows to write async code in a
+ * linear fashion without any callbacks. This makes it easy to read.
+ * Coroutines are called lightweight threads. This is mainly because they can work with thread-pools,
+ * which reduces the overhead required to create and destroy threads.
  *
- * Thread are good option to improve app's performance. But they are expensive, so they
- * need to be used carefully. Having too many threads compromises the app's behavior and
- * user experience.
+ * In this example, i will look at different blocking operations and how they behave with threads
+ * and suspending functions with Coroutines.
  *
- * Coroutines are called lightweight threads. Actually coroutines use threadpool in the
- * background. Which ensures they use less memory and are much faster than threads.
- * Also coroutines can switch execution between threads. Finally, unlike threads,
- * coroutines are non-blocking. Instead they suspend operation on a thread. This allows
- * other threads to continue working until the current function is suspended.
+ * NOTE: Start at Threads.kt, then Suspension.kt and finally Coroutines.kt
  */
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-    }
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
+        val currentThread = Thread.currentThread()
+        currentThread.isDaemon
+        binding.button.setOnClickListener {
+            //val bigInteger = findBigPrimeOnMainThread()
+            //binding.resultText.text = bigInteger.toString()
 
-    //Thread run() method is blocking since it runs on the current (main) thread.
-    //However, start() runs on a separate thread and consumes less time and is non-blocking.
-    /*Threads run within the app process. They share from the memory assigned to the process.
-    More threads means more memory allocated to the threads.
-    Also suppose, your device is a quad core device, then if you run 4 threads, chances are
-    they get executed by the 4 cores simultaneously. However, if you run say 8 threads. Then
-    while first 4 threads are processed by the 4 cores, the 5th thread onwards will have to wait
-    until one of the cores is free. So even though your app has created 8 threads, it will not be
-    able to immediately execute them. Which means they are holding memory while waiting to be
-    executed by the processor. After execution, the threads are released from the memory.
+            //run_10k_threads()
 
-    But coming back to the main point. If i run a single thread in the background for say 10 seconds,
-    then it does not impact the behavior on the main thread .i.e. user is still able to interact
-    with the app UI. But if i run say 10000 threads , then these threads take up memory from the
-    app's process, leaving less memory for the main thread and rest of the app to execute. Also they
-    use up all the CPU cores. Also the OS is having the overhead of managing these threads.
-    In this case, even if you use Thread.start(), the app UI will start to become laggy and may even
-    give ANR error. Or may even crash the app.
-    */
-    fun run_10k_threads(view: View) {
-        val time = measureTimeMillis {
-            for (i in 1..10000) {
-                Thread(Runnable {
-                    Log.v("Saket", "Going to sleep on thread $i")
-                    Thread.sleep(10)
-                    Log.v("Saket", "Waking up on thread $i")
-                }).start()  //run() will execute on current thread whereas start() executes on worker thread..
-            }
+            //invokeSuspendFunction()
+
+            //coroutinesAreNonBlocking()
+
         }
     }
 
-    //Coroutines are generally faster and more lightweight compared to threads..
-    fun run_coroutines(view: View) {
-        val time = measureTimeMillis {
-            /*
-            Coroutines run within a scope. The Coroutine scope defines the lifetime of the coroutine.
-            There are some pre-defined scopes:
-            ViewModelScope
-            LifeCycleScope
-            GlobalScope
-            MainScope
-
-            But you can also define your own CoroutineScope using CoroutineScope().
-             */
-            /*
-            Coroutines use a thread pool where the jobs are executed on separate threads.
-            It is also observed that the coroutine may switch execution from one thread before the
-            delay() to another thread after the delay. This is very flexible.
-             */
-            CoroutineScope(context = Dispatchers.IO).launch {
-                for (i in 1..100) {
-                    //Log.v("Saket", "Going to sleep on coroutine $i")
-                    Log.v("Saket", "Before delay $i - ${Thread.currentThread().name}")
-                    delay(1000)
-                    Log.v("Saket", "After delay $i - ${Thread.currentThread().name}")
-                    //Log.v("Saket", "Waking up on coroutine $i")
-                }
-            }
-
-            //Below coroutine will execute on the current thread which is the main thread in this case.
-/*            runBlocking {
-                for (i in 1..1000) {
-                    launch {
-                        //Log.v("Saket", "Going to sleep on coroutine $i")
-                        Log.v("Saket", "Thread $i - ${Thread.currentThread().name}")
-                        delay(10000)
-                        //Log.v("Saket", "Waking up on coroutine $i")
-                    }
-                }
-            }*/
-        }
+    /* Executed on main thread. Blocks UI. */
+    fun findBigPrimeOnMainThread(): BigInteger {
+        println("Saket findBigPrime is on thread ${Thread.currentThread()}")
+        return BigInteger.probablePrime(4096, Random())
     }
-
 }

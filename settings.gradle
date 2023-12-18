@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name = "Kotlin_coroutines_and_threads"
+rootProject.name = "Kotlin_threads_and_suspension"
