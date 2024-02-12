@@ -27,8 +27,8 @@ import kotlin.coroutines.CoroutineContext
  * cannot be used to perform any other operation, which means CPU resource/time wastage.
  * Enter Coroutines and Suspension.
  * Suspension allows for tasks on IO blocked thread to be temporarily paused (suspended).
- * Instead the CoroutineDispatcher will switch to tasks from other Coroutines to the processor.
- * Once processor is free again, the CoroutineDispatcher will resume execution of suspended
+ * Instead the CoroutineScheduler will switch to tasks from other Coroutines to the processor.
+ * Once processor is free again, the CoroutineScheduler will resume execution of suspended
  * function.
  * For CPU blocked threads, one can to use Dispatchers.Default CoroutineContext, which provides
  * a thread-pool with as many threads as CPUs. It is considered as most efficient way to

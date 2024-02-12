@@ -12,7 +12,7 @@ maybe the task is maybe IO blocking in nature. Then the CPU will have to wait
 until it gets a response. Then the CPU is waiting and no further instructions on the thread or
 maybe other threads is being executed. This is blocking nature of Threads.
 
-On contrary, in case of Coroutines, with use of suspend functions, the CoroutineDispatcher
+On contrary, in case of Coroutines, with use of suspend functions, the CoroutineScheduler
 can simply suspend (temporarily pause) a blocking operation, switch to tasks from another
 Coroutine and resume the suspended function once CPU is free again.
  */

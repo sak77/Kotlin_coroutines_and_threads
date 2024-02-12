@@ -36,7 +36,7 @@ fun coroutinesAreNonBlocking() {
 
 /*
 With Suspend functions, Coroutines can suspend (pause) execution of a thread blocking (I/O) task
-which is currently being executed. Instead, the CoroutineDispatcher will assign tasks from
+which is currently being executed. Instead, the CoroutineScheduler will assign tasks from
 another coroutine for the CPU to execute. When other coroutine tasks are executed,
 then the Dispatcher will resume execution of the blocking task.
 
@@ -47,9 +47,9 @@ function call.
 The delay function simulates type of IO blocking task. Here the CPU is idle for delay
 milliseconds. And the thread becomes blocked, as it can only send more instructions
 to the CPU after delay finishes. So instead of blocking the main thread, the
-CoroutineDispatcher suspends executing task from this coroutine and switches to executing
+CoroutineScheduler suspends executing task from this coroutine and switches to executing
 tasks from another coroutine. This is a more efficient use of the CPU time. The
-coroutineDispatcher will keep switching between coroutines so that the thread is
+CoroutineScheduler will keep switching between coroutines so that the thread is
 not blocked to execute tasks from another coroutine.
 */
 fun ioBlockingTaskWithCoroutines() {
@@ -107,23 +107,23 @@ This is an example with CPU intensive task that blocks the Main thread.
 In this case, when first coroutine sends task BigInteger.probablePrime(4096, Random())
 to the CPU. The CPU is blocked because it becomes busy in executing the task,
 so it cannot take any other task. So the thread is blocked here, and the
-CoroutineDispatcher cannot switch to another thread.
+CoroutineScheduler cannot switch to another thread.
 
 So while CPU is working on first coroutine task, other coroutines have to wait for
 their turn. Next, comes coroutine2, which like coroutine 1 again gives a CPU heavy
 task to perform. So the CPU is busy and thread is blocked until CPU executes the
 task from coroutine 2. After that coroutine 3, 4 and 5 do not ask CPU to do any
-heavy work. So CoroutineDispatcher may suspend and switch between the tasks if
+heavy work. So CoroutineScheduler may suspend and switch between the tasks if
 there is any chance to do so. Coroutine 6 task is similar to first 2 coroutines,
 so here again, CPU gets busy and it will block the thread until CPU finishes
-executing its task. Note that when switching tasks, the CoroutineDispatcher may
+executing its task. Note that when switching tasks, the CoroutineScheduler may
 choose Coroutine 6. In which case the CPU will have to first execute Coroutine6
 and then take tasks from others.
 
 When using Dispatchers.Default, then Coroutine works with a threadpool which has
 as many threads as CPU cores. So there is possibility for parallel execution of tasks.
 In this case each coroutine can execute on a separate thread and things become more
-flexible compared to using Dispatchers.Main. CoroutineDispatcher can also switch tasks
+flexible compared to using Dispatchers.Main. CoroutineScheduler can also switch tasks
 between Coroutines. Also UI is not affected by these operations, since main thread is
 not used in this case.
  */

@@ -24,10 +24,10 @@ can eat into the app's process memory, which can affect its user experience.
 Kotlin has concept of suspension wherein a suspend modifier is added to a
 function that performs some thread blocking task. 
 
-With Coroutines, when adding suspend modifier to a function, the CoroutineDispatcher 
+With Coroutines, when adding suspend modifier to a function, the CoroutineScheduler 
 is able to temporarily pause (suspend) operation of the function if it blocks the thread. 
-Doing so, allows the CoroutineDispatcher to switch to executing tasks from another Coroutine 
-instead. When the other tasks are executed and the CPU again becomes free, the CoroutineDispatcher 
+Doing so, allows the CoroutineScheduler to switch to executing tasks from another Coroutine 
+instead. When the other tasks are executed and the CPU again becomes free, the CoroutineScheduler 
 will resume the suspended function. This allows for more efficient use of CPU time.
 
 A suspended function does not block the thread from which it is called. Which means the 
